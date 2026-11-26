@@ -1,5 +1,15 @@
 [
   {
+    "query": "使用Amazon图片策略，给竹制收纳盒规划5张Listing图和3个A+模块，只输出策略，不生图",
+    "should_trigger": true,
+    "reason": "明确的Amazon图片前置策略任务；允许只交付策略，不要求生成"
+  },
+  {
+    "query": "我的亚马逊主图组已经讲了外观、尺寸和材质，只为这个产品补普通A+的内容分工",
+    "should_trigger": true,
+    "reason": "Amazon A+策略任务，需要对照已有内容规划新增帮助，不重做主图组"
+  },
+  {
     "query": "帮我给这款护腰带做张亚马逊主图，纯白底那种，产品图在 downloads/waist-belt.jpg",
     "should_trigger": true,
     "reason": "明确的电商主图生成诉求，命中 hero-image 场景"

@@ -30,7 +30,7 @@
     "quality": "clean professional e-commerce design, mobile-readable,"
   },
   "defaults": {
-    "module_size": "970x600 (standard brand story module)",
+    "module_size": "按本次所选 A+ 模块的实际交付规格填写",
     "layout": "left product hero, right 3 feature blocks with icons, bottom brand banner",
     "brand_system": "brand-consistent palette, sans-serif typography"
   },
@@ -85,14 +85,14 @@
     "亚马逊 A+ 功能模块 970x300px：横向布局，左侧产品场景图（护肤精华 + 滴管），右侧 4 个卖点横排（玻尿酸+角鲨烷+烟酰胺+维C），每项配简约线性图标和百分比数据，莫兰迪绿+米白，",
     "亚马逊 A+ 四宫格 300x300px ×4：①成分透视图 ②使用手法 ③28天数据对比 ④皮肤科医生推荐徽章，每格统一品牌色边框和图标系统，可独立或拼接，"
   ],
-  "anti_ai_tips": "常见翻车：文字渲染错（假字/串行）、模块尺寸不对被亚马逊拒、移动端字太小不可读。修复：文字用 ALL CAPS+逐字母回退+引号包裹；尺寸严格 970x600/970x300/300x300；正文字号视觉上≥24px 等效。",
+  "anti_ai_tips": "常见翻车：文字渲染错（假字/串行）、模块尺寸不对、移动端字太小不可读。修复：文字用 ALL CAPS+逐字母回退+引号包裹；交付像素匹配本次所选模块，生成像素另按入口限制确定；在实际展示比例下检查两端文字可读性。",
   "supports_image_reference": true,
   "platform_constraints": {
     "amazon": {
-      "module_sizes": "官方支持尺寸：970x600 / 970x300 / 300x300 / 970x1500 等精确像素",
+      "module_sizes": "模板示例含 970x600 / 970x300 / 300x300；实际交付规格以本次所选普通或高级 A+ 模块为准",
       "image_rule": "A+ 模块图可含文字（不同于主图），但不得含竞品名/促销价/号召点击外链",
       "text_rule": "文字须为品牌语言，避免 'click here' / 比竞品定价",
-      "note": "尺寸必须 16 的倍数且严格匹配官方模块槽位，imagegen.sh 尺寸校验会拦截不合规"
+      "note": "以上尺寸为模板示例，交付尺寸以本次所选模块规格为准；delivery_size 与 generation_size 分别记录。生成尺寸须通过 imagegen.sh 校验，再按事先确定的安全区域与裁切/等比导出方案得到模块交付尺寸，检查实际像素与可读性；不能要求模块交付尺寸同时满足生成入口的 16 倍数限制。见 references/amazon-image-strategy.md 的制作交接说明。"
     }
   },
   "text_assets": {

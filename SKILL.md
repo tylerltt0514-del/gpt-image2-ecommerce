@@ -1,7 +1,7 @@
 ---
 name: ecom-image2
 description: >-
-  由 buluslan（公众号：新西楼.AI）研发的开源电商做图 Skill：39 个电商场景模板、Campaign 套图一致性、GPT-Image-2.5 官方双模型路由（Flare/Sunburst）与平台技术预检。通过用户配置的 OpenAI 兼容端点生成图片，或导出 prompt 包手动使用。Trigger whenever the user wants product main images, white-background packshots, lifestyle scenes, detail-page infographics, A+ modules, size specs, packaging, UGC, variant sets, seasonal campaigns, motion GIFs, bulk product swaps, bulk translation, transparent cutouts, or reference-image-consistent visuals. 中文用户说「做图/主图/场景图/A+/动图/抠图/换品」时同样适用。NOT for 视频剪辑、图片压缩、纯格式转换.
+  由 buluslan（公众号：新西楼.AI）研发的开源电商做图 Skill：39 个电商场景模板、Amazon 图片前置策略、Campaign 套图一致性、GPT-Image-2.5 官方双模型路由（Flare/Sunburst）与平台技术预检。通过用户配置的 OpenAI 兼容端点生成图片，或导出 prompt 包手动使用。Trigger whenever the user wants Amazon image strategy, product main images, white-background packshots, lifestyle scenes, detail-page infographics, A+ modules, size specs, packaging, UGC, variant sets, seasonal campaigns, motion GIFs, bulk product swaps, bulk translation, transparent cutouts, or reference-image-consistent visuals. 中文用户说「Amazon 图片策略/做图/主图/场景图/A+/动图/抠图/换品」时同样适用。NOT for 视频剪辑、图片压缩、纯格式转换.
 allowed-tools:
   - Bash(bash *)
   - Bash(python3 *)
@@ -23,7 +23,7 @@ metadata:
 跨境电商视觉资产生成工具。把用户意图路由到 **39 个**结构化场景模板（含 edit 矩阵与四个进阶能力：产品动图 / 爆款换品 / 批量翻译 / 透明抠图），组装成 5-slot 分层 prompt，经用户端点支持的模型出图（**通道无关**：OpenAI 兼容端点，或导出 prompt 包手动使用），再做平台技术预检与视觉质量检查。
 
 ```
-意图识别 → 场景路由 → 驱动力诊断 → 套图 Lock → 5-slot 组装 → 模型选型(Flare/Sunburst) → imagegen.sh → 合规 + 质量自检
+意图识别 → Amazon 图片策略（适用时）→ 场景路由 → 驱动力诊断 → 套图 Lock → 5-slot 组装 → 模型选型(Flare/Sunburst) → imagegen.sh → 合规 + 质量自检
 ```
 
 ## 产品准则 + 三不红线
@@ -45,9 +45,20 @@ metadata:
 - **目标平台**：Amazon / TikTok / Shopify / 速卖通 / Temu / 其他（决定合规基线）
 - **目标市场**：US / EU / SEA / CN / ME（决定法规叠加，详见 platform-constraints）
 
+### Step 1.5: Amazon 图片前置策略
+
+Amazon 新做图片、整套重做、A+ 或重新策划任务，先读 `references/amazon-image-strategy.md`；用户明确调用“Amazon 图片策略”时也进入，模块默认平台为 Amazon，仍需确定站点和语言。其他平台继续原流程，不能因中文请求或“做图”等通用词把跨平台任务改成 Amazon。
+
+- 从当前任务资料整理本品事实与素材，以消费者问题分配每张图的任务，联合规划本次范围内的主图组与 A+。市场资料可选，不要求特定目录或外部技能。
+- 已有适用策略则复用；局部修图只补受影响的说明、事实与保留项。记录使用 `references/amazon-image-strategy-template.md`，只填本次相关部分。
+- 只要求策略时在此交付并结束，不调用生成接口；已有生图授权且实质信息明确时，展示策略后继续 Step 2，不新增一次策略审批。后续步骤复用当前策略，不递归重启本模块。
+- 策略中的问题、数量、顺序和本品依据优先于通用内容槽位与模板示例；实际平台要求仍须遵守。白底首图、附图和 A+ 分别按用途处理。
+
 ### Step 2: 场景路由（progressive disclosure）
 
 扫描 `references/scenarios/` 下模板的 `keywords` / `trigger_phrases` 字段，**只加载命中的那一个**模板。不要预加载全部。
+
+已有 Amazon 策略时按当前图片任务匹配模板，套图逐行选择；模板默认文案、比较、认证和品牌故事仅是示例，不能覆盖策略或当成本品事实。A+ 模块规格与生成尺寸按策略中的尺寸衔接说明确定。
 
 | 触发词 | 模板文件 |
 |---|---|
@@ -95,6 +106,8 @@ metadata:
 
 ### Step 3: 转化驱动力诊断（仅商品/营销任务）
 
+已有适用 Amazon 策略时复用其中的购买理由和信息顺序，跳过本步的重复编排。其他商品/营销任务按下列方式判断。
+
 判断核心驱动力，决定主图序列编排：
 
 - **视觉驱动**：颜值/设计感为卖点 → 主图优先渲染材质与光影
@@ -107,12 +120,13 @@ metadata:
 
 用户请求 ≥2 张图（如「做一套 5 张 Listing 套图」）→ 视为套图任务，按 `references/campaign-style-lock.md` 协议建 10 字段 Lock（视觉方向 / 色板 / 冷暖 / 字体 / 背景 / 光线 / 布局 / 图标 / 产品呈现 / 禁止漂移项）：
 
-- 标记 `campaign_id`（同步写入每个模板的 `campaign_id` 字段）+ 读 `assets/default-style-lock.json` 作 fallback
+- 标记 `campaign_id`（同步写入每个模板的 `campaign_id` 字段）+ 读 `assets/default-style-lock.json` 作 fallback；Amazon 策略任务先按协议的“Amazon 策略任务的 Lock 适配”调整默认字段，再注入 prompt
 - **prepend Lock 段**到每张图 prompt 开头，固定格式 `[CAMPAIGN LOCK — campaign_id: <id>]...[/CAMPAIGN LOCK]`
-- **单张只允许改**：画面目的 + 主体动作 + 局部构图 + 短文案（其他 6 项由 Lock 锁定）
+- **通用单张自由度**：画面目的 + 主体动作 + 局部构图 + 短文案（其他 6 项由 Lock 锁定）；Amazon 按下述逐图任务规则确定镜头、角度与构图的自由度
 - **多变体** n=8：同锚点只改 Subject 的颜色/材质（强一致输出）
 - **region 适配**：按目标市场读 campaign-style-lock.md 第六节 4 张查表（审美 / 肤色多样性 / 文化禁忌 / 节日季）
-- **套图编排**：读 `references/funnel-set.md` 的 6 层漏斗 9 槽位（7 核心 + 2 扩展），决定生成哪几张、什么顺序
+- **Amazon 套图**：按当前策略决定数量、问题分工与顺序；`references/funnel-set.md` 只作视觉形式参考，不套用其默认槽位或 A+ 映射。共享品牌字体、色彩关系与制作质感，镜头、角度、主体占比和构图按每张图的任务选择；同构图颜色变体等明确要求仍保持一致。
+- **其他套图编排**：读 `references/funnel-set.md` 的 6 层漏斗 9 槽位（7 核心 + 2 扩展），决定生成哪几张、什么顺序
 
 ### Step 5: Prompt 组装（5-slot + 字段渲染）
 
@@ -206,8 +220,11 @@ python3 scripts/compliance_check.py <image.png> --platform amazon --strict
 
 生成后按 envelope 报告的实际图片路径交付（把临时文件复制到用户工作目录并清理临时产物），报告最终路径 + 技术预检结果。
 
+**7.5 Amazon 策略复核**（已有策略时）：逐图对照原定消费者问题、本品事实与可见说明；A+ 对照关联主图组检查新增帮助或必要承接，未取得相关图组则写明未对照。仅修正受影响的策略行和图片。A+ 另核对实际模块交付像素与两端可读性，不将生成入口允许的尺寸直接当作平台交付规格。
+
 ## 核心原则（指针，不展开）
 
+- **Amazon 图片策略与记录**（消费者问题 / 本品依据 / 主图组与 A+ 分工 / 制作交接）→ `references/amazon-image-strategy.md`、`references/amazon-image-strategy-template.md`
 - **五要素组装法则 + 反 AI 感 + 文字渲染工艺 + 光照/材质/构图 + 编辑保真** → `references/craft.md`（「为什么」层，每个工艺讲原理；〇节五要素 / 五节文字三招+2.5 增量 / 七节编辑保真）
 - **模型选型**（Flare/Sunburst 双模型路由 + quality 档 + 成本心智）→ `references/model-routing.md`
 - **产品动图全流程**（16 格帧图 → 切片 → GIF/WebP 合成 + 排查九条）→ `references/motion-gif.md`
